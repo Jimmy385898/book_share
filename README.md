@@ -28,19 +28,19 @@
 1. 用户注册登录（手机号/邮箱）
 2. 图书发布与管理
 3. 图书浏览与搜索
-4. 借阅申请与管理
-5. 书评发布与点赞
-6. 讨论区交流
-7. 排行榜展示
+4. 借阅申请与管理（双向确认机制）
+5. 书评发布与点赞（显示用户头像和昵称）
+6. 讨论区交流（支持多级嵌套回复）
+7. 排行榜展示（活跃用户排名）
 8. 个人信息管理
 
 ### 后台管理端
-1. 数据统计分析
-2. 用户管理
-3. 图书审核管理
-4. 借阅记录管理
-5. 书评审核管理
-6. 讨论审核管理
+1. 数据统计分析（ECharts 可视化）
+2. 用户管理（启用/禁用/删除）
+3. 图书审核管理（审核/拒绝/删除）
+4. 借阅记录管理（状态查看）
+5. 书评审核管理（审核/拒绝/删除）
+6. 讨论审核管理（讨论和回复管理）
 
 ## 安装部署
 
@@ -69,7 +69,8 @@ java -jar target/community-book-share-1.0.0.jar
 
 ### 3. 前端部署
 
-#### 用户端
+**注意：前端已合并为单一项目，包含用户端和管理员端**
+
 ```bash
 cd front/user
 
@@ -83,23 +84,11 @@ npm run dev
 npm run build
 ```
 
-用户端将在 http://localhost:3000 启动
+前端将在 http://localhost:3000 启动
 
-#### 后台管理端
-```bash
-cd front/admin
-
-# 安装依赖
-npm install
-
-# 开发模式运行
-npm run dev
-
-# 生产构建
-npm run build
-```
-
-后台管理端将在 http://localhost:3001 启动
+**访问方式：**
+- 用户端登录：http://localhost:3000/login
+- 管理员登录：http://localhost:3000/admin/login（或在用户登录页点击"管理员登录"）
 
 ### 4. Redis 启动
 
@@ -135,44 +124,70 @@ zjp/
 │   │   └── pom.xml                  # Maven 配置
 │   └── ...
 ├── front/
-│   ├── user/                   # 用户端前端
-│   │   ├── src/
-│   │   │   ├── views/          # 页面组件
-│   │   │   ├── layout/         # 布局组件
-│   │   │   ├── router/         # 路由配置
-│   │   │   ├── stores/         # 状态管理
-│   │   │   ├── utils/          # 工具函数
-│   │   │   ├── App.vue
-│   │   │   └── main.js
-│   │   ├── package.json
-│   │   └── vite.config.js
-│   └── admin/                  # 后台管理端前端
+│   └── user/                   # 前端项目（包含用户端和管理员端）
 │       ├── src/
-│       │   ├── views/
-│       │   ├── layout/
-│       │   ├── router/
-│       │   ├── stores/
-│       │   ├── utils/
+│       │   ├── views/          # 页面组件
+│       │   │   ├── admin/      # 管理员页面
+│       │   │   │   ├── AdminLogin.vue
+│       │   │   │   ├── Dashboard.vue
+│       │   │   │   ├── Users.vue
+│       │   │   │   ├── AdminBooks.vue
+│       │   │   │   ├── Borrows.vue
+│       │   │   │   ├── Reviews.vue
+│       │   │   │   └── Discussions.vue
+│       │   │   ├── Login.vue
+│       │   │   ├── Register.vue
+│       │   │   ├── Home.vue
+│       │   │   ├── Books.vue
+│       │   │   ├── BookDetail.vue
+│       │   │   ├── PublishBook.vue
+│       │   │   ├── MyBorrow.vue
+│       │   │   ├── Discussion.vue
+│       │   │   ├── DiscussionDetail.vue
+│       │   │   ├── Rank.vue
+│       │   │   └── Profile.vue
+│       │   ├── layout/         # 布局组件
+│       │   │   ├── MainLayout.vue      # 用户端布局
+│       │   │   └── admin/
+│       │   │       └── AdminLayout.vue # 管理员端布局
+│       │   ├── router/         # 路由配置（统一管理）
+│       │   ├── stores/         # 状态管理
+│       │   ├── utils/          # 工具函数
 │       │   ├── App.vue
 │       │   └── main.js
 │       ├── package.json
 │       └── vite.config.js
-└── database.sql                # 数据库初始化脚本
+├── database.sql                # 数据库初始化脚本
+├── .gitignore                  # Git 忽略文件
+└── README.md                   # 项目说明
 ```
 
 ## 核心功能说明
 
-### 借阅流程
+### 借阅流程（双向确认机制）
 1. 借阅者浏览图书并申请借阅
 2. 出借者收到申请，可选择同意或拒绝
-3. 同意后，出借者确认发货
-4. 借阅者确认归还
-5. 支持续借功能（最多2次）
+3. 同意后进入借阅中状态
+4. **借阅者申请归还**（状态变为"待确认归还"）
+5. **出借者确认归还**（状态变为"已归还"）
+6. 支持续借功能（最多2次）
+
+### 讨论区功能
+- 支持多级嵌套回复（类似贴吧楼中楼）
+- 显示用户头像和昵称
+- 显示回复对象（@用户名）
+- 管理员可管理讨论和回复
+
+### 排行榜系统
+- 活跃用户排名（基于书评和讨论活跃度）
+- 评分算法：书评数 × 2 + 讨论数 × 3
+- 实时更新排名
 
 ### 审核机制
 - 图书发布需要管理员审核
 - 书评发布需要管理员审核
 - 讨论发布需要管理员审核
+- 管理员可禁用/启用回复
 
 ### 文件上传
 - 图书封面上传
@@ -189,11 +204,20 @@ zjp/
 ## 开发说明
 
 - 后端 API 基础路径：/api
-- 用户端前端端口：3000
-- 后台管理端端口：3001
+- 前端端口：3000
 - 后端服务端口：8080
 - Redis 端口：6379
 - MySQL 端口：3306
+
+### 路由说明
+- 用户端路由：`/` 开头（如 `/home`, `/books`）
+- 管理员路由：`/admin` 开头（如 `/admin/dashboard`, `/admin/users`）
+- 路由守卫自动根据用户角色进行权限控制
+
+### 数据库配置
+- 数据库名：book_share
+- 默认密码：jimmy（可在 application.yml 中修改）
+- 已包含管理员初始数据
 
 ## 许可证
 
