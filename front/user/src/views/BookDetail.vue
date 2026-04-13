@@ -23,15 +23,21 @@
           </div>
           <div class="meta-item">
             <span class="label">出版社：</span>
-            <span>{{ book.publisher }}</span>
+            <span>{{ book.publisher || '-' }}</span>
           </div>
           <div class="meta-item">
             <span class="label">ISBN：</span>
-            <span>{{ book.isbn }}</span>
+            <span>{{ book.isbn || '-' }}</span>
           </div>
           <div class="meta-item">
             <span class="label">分类：</span>
             <el-tag>{{ book.category }}</el-tag>
+          </div>
+          <div class="meta-item">
+            <span class="label">图书状态：</span>
+            <el-tag :type="book.status === 1 ? 'success' : 'info'">
+              {{ book.status === 1 ? '可借阅' : '已借出' }}
+            </el-tag>
           </div>
           <div class="meta-item">
             <span class="label">借阅期限：</span>
@@ -47,7 +53,7 @@
 
         <div class="book-description">
           <h3>图书简介</h3>
-          <p>{{ book.description }}</p>
+          <p>{{ book.description || '暂无简介' }}</p>
         </div>
 
         <el-divider />
@@ -127,11 +133,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 
 const route = useRoute()
+const router = useRouter()
 const loading = ref(false)
 const book = ref({})
 const hasFollowed = ref(false)
@@ -168,6 +175,7 @@ const loadBookDetail = async () => {
     loadReviews()
   } catch (error) {
     console.error(error)
+    router.push('/books')
   } finally {
     loading.value = false
   }
@@ -333,4 +341,3 @@ onMounted(() => {
   gap: 10px;
 }
 </style>
-

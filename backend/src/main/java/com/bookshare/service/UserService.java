@@ -70,6 +70,21 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         
         this.save(user);
     }
+
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
+        User user = this.getById(userId);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+
+        if (!DigestUtil.md5Hex(oldPassword).equals(user.getPassword())) {
+            throw new RuntimeException("原密码错误");
+        }
+
+        user.setPassword(DigestUtil.md5Hex(newPassword));
+        this.updateById(user);
+        redisTemplate.delete("user:token:" + userId);
+    }
     
     public void logout(Long userId) {
         redisTemplate.delete("user:token:" + userId);

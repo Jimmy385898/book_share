@@ -73,6 +73,16 @@ public class DiscussionController {
             return Result.error(e.getMessage());
         }
     }
+
+    @PostMapping("/like/{id}")
+    public Result<String> likeDiscussion(@PathVariable Long id, @RequestAttribute Long userId) {
+        try {
+            discussionService.likeDiscussion(id, userId);
+            return Result.success("操作成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
     
     @PostMapping("/reply")
     public Result<String> replyDiscussion(@RequestBody DiscussionReply reply, @RequestAttribute Long userId) {

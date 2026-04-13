@@ -26,9 +26,12 @@
       <h3 class="discussion-title">{{ item.title }}</h3>
       <p class="discussion-content">{{ item.content }}</p>
       <div class="discussion-meta">
-        <span><el-icon><View /></el-icon> {{ item.viewCount }}</span>
-        <span><el-icon><ChatDotRound /></el-icon> {{ item.replyCount }}</span>
-        <span><el-icon><Star /></el-icon> {{ item.likeCount }}</span>
+        <span class="meta-item"><el-icon><View /></el-icon> {{ item.viewCount }}</span>
+        <span class="meta-item"><el-icon><ChatDotRound /></el-icon> {{ item.replyCount }}</span>
+        <span class="meta-item like-action" @click.stop="handleLike(item)">
+          <el-icon><Star /></el-icon>
+          <span>点赞 {{ item.likeCount }}</span>
+        </span>
       </div>
     </el-card>
 
@@ -106,6 +109,16 @@ const loadDiscussions = async () => {
 const handlePageChange = (newPage) => {
   page.value = newPage
   loadDiscussions()
+}
+
+const handleLike = async (item) => {
+  try {
+    await request.post(`/discussion/like/${item.id}`)
+    item.likeCount = Number(item.likeCount || 0) + 1
+    ElMessage.success('点赞成功')
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 const handlePublish = async () => {
@@ -200,12 +213,24 @@ onMounted(() => {
   gap: 20px;
   color: #999;
   font-size: 14px;
+  align-items: center;
 }
 
-.discussion-meta span {
+.meta-item {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.like-action {
+  cursor: pointer;
+  color: #e6a23c;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.like-action:hover {
+  color: #f56c6c;
 }
 
 .time {

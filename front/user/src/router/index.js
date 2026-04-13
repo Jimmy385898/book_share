@@ -43,6 +43,21 @@ const routes = [
         component: () => import('@/views/PublishBook.vue')
       },
       {
+        path: 'book/edit/:id',
+        name: 'EditBook',
+        component: () => import('@/views/PublishBook.vue')
+      },
+      {
+        path: 'my-books',
+        name: 'MyBooks',
+        component: () => import('@/views/MyBooks.vue')
+      },
+      {
+        path: 'my-books/:id',
+        name: 'MyBookDetail',
+        component: () => import('@/views/MyBookDetail.vue')
+      },
+      {
         path: 'borrow',
         name: 'MyBorrow',
         component: () => import('@/views/MyBorrow.vue')
@@ -66,6 +81,11 @@ const routes = [
         path: 'profile',
         name: 'Profile',
         component: () => import('@/views/Profile.vue')
+      },
+      {
+        path: 'change-password',
+        name: 'UserChangePassword',
+        component: () => import('@/views/UserChangePassword.vue')
       }
     ]
   },
@@ -103,6 +123,11 @@ const routes = [
         path: 'discussions',
         name: 'AdminDiscussions',
         component: () => import('@/views/admin/Discussions.vue')
+      },
+      {
+        path: 'change-password',
+        name: 'AdminChangePassword',
+        component: () => import('@/views/admin/AdminChangePassword.vue')
       }
     ]
   }
@@ -117,7 +142,6 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
   const token = userStore.token
   
-  // 从 localStorage 直接读取，确保获取到最新的 userInfo
   let userInfo = {}
   try {
     const storedUserInfo = localStorage.getItem('userInfo')
@@ -133,7 +157,6 @@ router.beforeEach((to, from, next) => {
   console.log('路由守卫 - userInfo:', userInfo)
   console.log('路由守卫 - role:', userInfo?.role)
   
-  // 管理员路由保护
   if (to.path.startsWith('/admin') && to.path !== '/admin/login') {
     if (!token) {
       next('/admin/login')
@@ -142,31 +165,23 @@ router.beforeEach((to, from, next) => {
     } else {
       next()
     }
-  }
-  // 用户路由保护
-  else if (!token && to.path !== '/login' && to.path !== '/register' && to.path !== '/admin/login') {
+  } else if (!token && to.path !== '/login' && to.path !== '/register' && to.path !== '/admin/login') {
     next('/login')
-  } 
-  // 已登录用户访问登录页
-  else if (token && to.path === '/login') {
+  } else if (token && to.path === '/login') {
     if (userInfo?.role === 'admin') {
       next('/admin/dashboard')
     } else {
       next('/home')
     }
-  }
-  // 已登录管理员访问管理员登录页
-  else if (token && to.path === '/admin/login') {
+  } else if (token && to.path === '/admin/login') {
     if (userInfo?.role === 'admin') {
       next('/admin/dashboard')
     } else {
       next('/login')
     }
-  }
-  else {
+  } else {
     next()
   }
 })
 
 export default router
-

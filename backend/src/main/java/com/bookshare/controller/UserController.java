@@ -6,6 +6,8 @@ import com.bookshare.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
@@ -31,6 +33,16 @@ public class UserController {
             user.setPassword(null);
             userService.updateById(user);
             return Result.success("更新成功");
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @PutMapping("/password")
+    public Result<String> changePassword(@RequestBody Map<String, String> params, @RequestAttribute Long userId) {
+        try {
+            userService.changePassword(userId, params.get("oldPassword"), params.get("newPassword"));
+            return Result.success("密码修改成功，请重新登录");
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }

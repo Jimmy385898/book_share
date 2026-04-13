@@ -38,7 +38,7 @@ public class RankController {
     public Result<List<Book>> getHotBooks() {
         try {
             LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Book::getStatus, 1);
+            wrapper.in(Book::getStatus, Arrays.asList(1, 2));
             wrapper.orderByDesc(Book::getBorrowCount);
             wrapper.last("limit 10");
             
@@ -53,7 +53,7 @@ public class RankController {
     public Result<List<Book>> getPopularBooks() {
         try {
             LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(Book::getStatus, 1);
+            wrapper.in(Book::getStatus, Arrays.asList(1, 2));
             wrapper.orderByDesc(Book::getFollowCount);
             wrapper.last("limit 10");
             

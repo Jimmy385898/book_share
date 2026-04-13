@@ -11,6 +11,7 @@ import com.bookshare.entity.User;
 import com.bookshare.mapper.DiscussionMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +26,9 @@ public class DiscussionService extends ServiceImpl<DiscussionMapper, Discussion>
     
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
     
     public IPage<DiscussionDTO> getDiscussionListWithUser(Integer page, Integer size, Long bookId, String topic) {
         Page<Discussion> pageParam = new Page<>(page, size);
@@ -101,6 +105,25 @@ public class DiscussionService extends ServiceImpl<DiscussionMapper, Discussion>
         
         Discussion discussion = this.getById(reply.getDiscussionId());
         discussion.setReplyCount(discussion.getReplyCount() + 1);
+        this.updateById(discussion);
+    }
+
+    @Transactional
+    public void likeDiscussion(Long discussionId, Long userId) {
+        Discussion discussion = this.getById(discussionId);
+        if (discussion == null) {
+            throw new RuntimeException("讨论不存在");
+        }
+
+        String key = "discussion:like:" + discussionId + ":" + userId;
+        Boolean hasLiked = redisTemplate.hasKey(key);
+        if (Boolean.TRUE.equals(hasLiked)) {
+            throw new RuntimeException("您已经点过赞了");
+        }
+
+        redisTemplate.opsForValue().set(key, "1");
+        int currentLikeCount = discussion.getLikeCount() == null ? 0 : discussion.getLikeCount();
+        discussion.setLikeCount(currentLikeCount + 1);
         this.updateById(discussion);
     }
     

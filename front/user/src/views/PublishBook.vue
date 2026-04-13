@@ -2,9 +2,12 @@
   <div class="publish-book">
     <el-card>
       <template #header>
-        <h2>发布图书</h2>
+        <div class="card-header">
+          <h2>{{ isEdit ? '编辑图书' : '发布图书' }}</h2>
+          <p>{{ isEdit ? '修改后需要重新提交管理员审核' : '发布后需要管理员审核通过才会在前台展示' }}</p>
+        </div>
       </template>
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px" v-loading="loadingDetail">
         <el-form-item label="图书封面" prop="cover">
           <el-upload
             class="cover-uploader"
@@ -74,8 +77,8 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="handleSubmit" :loading="loading">发布</el-button>
-          <el-button @click="$router.back()">取消</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="submitting">{{ isEdit ? '保存并提交审核' : '发布' }}</el-button>
+          <el-button @click="router.back()">取消</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -83,15 +86,18 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { reactive, ref, computed, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 
+const route = useRoute()
 const router = useRouter()
 const formRef = ref()
-const loading = ref(false)
+const submitting = ref(false)
+const loadingDetail = ref(false)
 const uploadUrl = '/api/file/upload'
+const isEdit = computed(() => Boolean(route.params.id))
 
 const form = reactive({
   cover: '',
@@ -135,25 +141,74 @@ const handleUploadSuccess = (response) => {
   form.cover = response.data
 }
 
+const loadBookDetail = async () => {
+  if (!isEdit.value) {
+    return
+  }
+  loadingDetail.value = true
+  try {
+    const res = await request.get(`/book/my/${route.params.id}`)
+    Object.assign(form, {
+      cover: res.data.cover || '',
+      title: res.data.title || '',
+      author: res.data.author || '',
+      publisher: res.data.publisher || '',
+      isbn: res.data.isbn || '',
+      category: res.data.category || '',
+      description: res.data.description || '',
+      borrowDays: res.data.borrowDays || 30,
+      allowRenew: !!res.data.allowRenew,
+      allowTransfer: !!res.data.allowTransfer,
+      pickupAddress: res.data.pickupAddress || '',
+      deliveryRange: res.data.deliveryRange || '',
+      returnPoint: res.data.returnPoint || ''
+    })
+  } catch (error) {
+    console.error(error)
+    router.push('/my-books')
+  } finally {
+    loadingDetail.value = false
+  }
+}
+
 const handleSubmit = async () => {
   await formRef.value.validate()
-  loading.value = true
+  submitting.value = true
   try {
-    await request.post('/book/publish', form)
-    ElMessage.success('发布成功，等待审核')
-    router.push('/books')
+    if (isEdit.value) {
+      await request.put(`/book/${route.params.id}`, form)
+      ElMessage.success('图书修改成功，已重新提交审核')
+    } else {
+      await request.post('/book/publish', form)
+      ElMessage.success('发布成功，等待审核')
+    }
+    router.push('/my-books')
   } catch (error) {
     console.error(error)
   } finally {
-    loading.value = false
+    submitting.value = false
   }
 }
+
+onMounted(() => {
+  loadBookDetail()
+})
 </script>
 
 <style scoped>
 .publish-book {
   max-width: 800px;
   margin: 0 auto;
+}
+
+.card-header h2 {
+  margin: 0;
+}
+
+.card-header p {
+  margin: 8px 0 0;
+  color: #909399;
+  font-size: 14px;
 }
 
 .cover-uploader {
@@ -186,4 +241,3 @@ const handleSubmit = async () => {
   object-fit: cover;
 }
 </style>
-

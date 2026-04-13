@@ -39,6 +39,8 @@
       </el-col>
     </el-row>
 
+    <el-empty v-if="!loading && books.length === 0" description="暂无可展示图书" />
+
     <el-pagination
       v-if="total > 0"
       class="pagination"
@@ -158,4 +160,3 @@ onMounted(() => {
   justify-content: center;
 }
 </style>
-

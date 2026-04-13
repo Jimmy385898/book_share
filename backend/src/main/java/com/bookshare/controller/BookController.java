@@ -28,11 +28,36 @@ public class BookController {
             return Result.error(e.getMessage());
         }
     }
+
+    @GetMapping("/my")
+    public Result<IPage<Book>> getMyBookList(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Integer status,
+            @RequestAttribute Long userId) {
+        try {
+            IPage<Book> result = bookService.getMyBookList(page, size, userId, keyword, status);
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
     
     @GetMapping("/{id}")
     public Result<Book> getBookDetail(@PathVariable Long id) {
         try {
-            Book book = bookService.getById(id);
+            Book book = bookService.getPublicBookDetail(id);
+            return Result.success(book);
+        } catch (Exception e) {
+            return Result.error(e.getMessage());
+        }
+    }
+
+    @GetMapping("/my/{id}")
+    public Result<Book> getMyBookDetail(@PathVariable Long id, @RequestAttribute Long userId) {
+        try {
+            Book book = bookService.getMyBookDetail(id, userId);
             return Result.success(book);
         } catch (Exception e) {
             return Result.error(e.getMessage());
@@ -53,13 +78,8 @@ public class BookController {
     @PutMapping("/{id}")
     public Result<String> updateBook(@PathVariable Long id, @RequestBody Book book, @RequestAttribute Long userId) {
         try {
-            Book existBook = bookService.getById(id);
-            if (!existBook.getUserId().equals(userId)) {
-                return Result.error("无权操作");
-            }
-            book.setId(id);
-            bookService.updateById(book);
-            return Result.success("更新成功");
+            bookService.updateBookByOwner(id, userId, book);
+            return Result.success("图书信息已更新，等待管理员重新审核");
         } catch (Exception e) {
             return Result.error(e.getMessage());
         }
@@ -68,11 +88,7 @@ public class BookController {
     @DeleteMapping("/{id}")
     public Result<String> deleteBook(@PathVariable Long id, @RequestAttribute Long userId) {
         try {
-            Book book = bookService.getById(id);
-            if (!book.getUserId().equals(userId)) {
-                return Result.error("无权操作");
-            }
-            bookService.removeById(id);
+            bookService.deleteBookByOwner(id, userId);
             return Result.success("删除成功");
         } catch (Exception e) {
             return Result.error(e.getMessage());

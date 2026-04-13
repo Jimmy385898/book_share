@@ -16,8 +16,12 @@
         <p>{{ discussion.content }}</p>
       </div>
       <div class="post-meta">
-        <span><el-icon><View /></el-icon> {{ discussion.viewCount }}</span>
-        <span><el-icon><ChatDotRound /></el-icon> {{ discussion.replyCount }}</span>
+        <span class="meta-item"><el-icon><View /></el-icon> {{ discussion.viewCount }}</span>
+        <span class="meta-item"><el-icon><ChatDotRound /></el-icon> {{ discussion.replyCount }}</span>
+        <span class="meta-item like-action" @click="handleLike">
+          <el-icon><Star /></el-icon>
+          <span>点赞 {{ discussion.likeCount }}</span>
+        </span>
       </div>
     </el-card>
 
@@ -131,6 +135,16 @@ const loadReplies = async () => {
   }
 }
 
+const handleLike = async () => {
+  try {
+    await request.post(`/discussion/like/${route.params.id}`)
+    ElMessage.success('操作成功')
+    await loadDetail()
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 const showReplyDialog = (reply) => {
   replyTarget.value = reply
   // 滚动到回复框
@@ -227,12 +241,24 @@ onMounted(() => {
   font-size: 14px;
   padding-top: 20px;
   border-top: 1px solid #eee;
+  align-items: center;
 }
 
-.post-meta span {
+.meta-item {
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.like-action {
+  cursor: pointer;
+  color: #e6a23c;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.like-action:hover {
+  color: #f56c6c;
 }
 
 .reply-section h3 {

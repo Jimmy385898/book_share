@@ -12,9 +12,10 @@
             <el-menu-item index="/books">图书广场</el-menu-item>
             <el-menu-item index="/discussion">讨论区</el-menu-item>
             <el-menu-item index="/rank">排行榜</el-menu-item>
+            <el-menu-item index="/my-books">我的图书</el-menu-item>
           </el-menu>
           <div class="user-info">
-            <el-button type="primary" @click="$router.push('/publish')">发布图书</el-button>
+            <el-button type="primary" @click="router.push('/publish')">发布图书</el-button>
             <el-dropdown @command="handleCommand">
               <div class="user-avatar">
                 <el-avatar :src="userStore.userInfo.avatar || '/default-avatar.png'">
@@ -25,6 +26,8 @@
                 <el-dropdown-menu>
                   <el-dropdown-item command="profile">个人中心</el-dropdown-item>
                   <el-dropdown-item command="borrow">我的借阅</el-dropdown-item>
+                  <el-dropdown-item command="myBooks">我的图书</el-dropdown-item>
+                  <el-dropdown-item command="changePassword">修改密码</el-dropdown-item>
                   <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -67,6 +70,10 @@ const handleCommand = (command) => {
     router.push('/profile')
   } else if (command === 'borrow') {
     router.push('/borrow')
+  } else if (command === 'myBooks') {
+    router.push('/my-books')
+  } else if (command === 'changePassword') {
+    router.push('/change-password')
   }
 }
 </script>
@@ -126,4 +133,3 @@ const handleCommand = (command) => {
   padding: 30px 20px;
 }
 </style>
-

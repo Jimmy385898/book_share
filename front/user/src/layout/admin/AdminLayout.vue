@@ -37,6 +37,10 @@
             <el-icon><Comment /></el-icon>
             <span>讨论管理</span>
           </el-menu-item>
+          <el-menu-item index="/admin/change-password">
+            <el-icon><Lock /></el-icon>
+            <span>修改密码</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
       <el-container>
@@ -50,6 +54,7 @@
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
+                  <el-dropdown-item command="changePassword">修改密码</el-dropdown-item>
                   <el-dropdown-item command="logout">退出登录</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -86,6 +91,8 @@ const handleCommand = (command) => {
       userStore.logout()
       router.push('/admin/login')
     })
+  } else if (command === 'changePassword') {
+    router.push('/admin/change-password')
   }
 }
 </script>
