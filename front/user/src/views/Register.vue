@@ -114,7 +114,9 @@ const handleRegister = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-image: url('@/img/login-backend.png');
+  background-size: cover;
+  background-position: center;
 }
 
 .register-box {
